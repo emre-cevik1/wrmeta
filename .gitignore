@@ -1,0 +1,5 @@
+backend/config/Database.php
+wr_meta_cpanel.zip
+cpanel_deploy/
+.idea/
+.vscode/

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Wild Rift Meta Tracker — Şampiyon tier listesi, kazanma oranları ve meta analizi">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>WR META — Wild Rift Meta Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <span class="logo-text">WR META</span>
+        <span class="logo-dot"></span>
+      </a>
+
+      <div class="header-right">
+        <div class="role-filters" id="roleFilters">
+          <button class="role-filter active" data-role="">Tümü</button>
+          <button class="role-filter" data-role="baron">Baron</button>
+          <button class="role-filter" data-role="jungle">Orman</button>
+          <button class="role-filter" data-role="mid">Orta</button>
+          <button class="role-filter" data-role="dragon">Ejder</button>
+          <button class="role-filter" data-role="support">Destek</button>
+        </div>
+
+        <div class="search-bar">
+          <span class="search-bar__icon">🔍</span>
+          <input
+            type="text"
+            class="search-bar__input"
+            id="searchInput"
+            placeholder="Şampiyon ara..."
+            autocomplete="off"
+            spellcheck="false"
+          >
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- Stats Overview Bar -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stats-bar__item">
+          <span class="stats-bar__label">Şampiyonlar</span>
+          <span class="stats-bar__value" id="statTotalChampions">—</span>
+        </div>
+        <div class="stats-bar__divider"></div>
+        <div class="stats-bar__item">
+          <span class="stats-bar__label">Yama</span>
+          <span class="stats-bar__value" id="statPatch">—</span>
+        </div>
+        <div class="stats-bar__divider"></div>
+        <div class="stats-bar__item">
+          <span class="stats-bar__label">Son Güncelleme</span>
+          <span class="stats-bar__value" id="statLastUpdated">—</span>
+        </div>
+      </div>
+
+      <!-- Tier List Content -->
+      <div id="tierListContent">
+        <!-- Rendered dynamically by tierList.js -->
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer__text">
+        WR META, Riot Games tarafından desteklenmemektedir ve Riot Games'in görüşlerini yansıtmamaktadır.<br>
+        League of Legends: Wild Rift, Riot Games Inc.'in tescilli markasıdır.<br>
+        <span style="margin-top: 8px; display: inline-block; opacity: 0.6;">Developed with ☕ &amp; 💛</span>
+      </p>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/tierList.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
