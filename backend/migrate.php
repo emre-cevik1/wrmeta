@@ -1,22 +1,24 @@
 <?php
 /**
- * MSSQL Database Migration Script
- * Drops existing tables, creates new MSSQL schema, and seeds data.
+ * MariaDB / MySQL Database Migration Script
+ * Drops existing tables, creates new schema, and seeds data.
  */
 
 require_once __DIR__ . '/config/Database.php';
 
-echo "BasaL: Starting MSSQL Migration...\n\n";
+echo "WR META: Starting MariaDB/MySQL Migration...\n\n";
 
 try {
     $db = Database::getInstance();
     
     // 1. Drop existing tables if they exist
     $dropSql = "
-        IF OBJECT_ID('scrape_logs', 'U') IS NOT NULL DROP TABLE scrape_logs;
-        IF OBJECT_ID('counters', 'U') IS NOT NULL DROP TABLE counters;
-        IF OBJECT_ID('statistics', 'U') IS NOT NULL DROP TABLE statistics;
-        IF OBJECT_ID('champions', 'U') IS NOT NULL DROP TABLE champions;
+        SET FOREIGN_KEY_CHECKS = 0;
+        DROP TABLE IF EXISTS scrape_logs;
+        DROP TABLE IF EXISTS counters;
+        DROP TABLE IF EXISTS statistics;
+        DROP TABLE IF EXISTS champions;
+        SET FOREIGN_KEY_CHECKS = 1;
     ";
     $db->exec($dropSql);
     echo "[OK] Existing tables dropped.\n";
@@ -24,52 +26,52 @@ try {
     // 2. Create tables
     $createSql = "
         CREATE TABLE champions (
-            id INT IDENTITY(1,1) PRIMARY KEY,
-            name NVARCHAR(100) NOT NULL,
-            slug NVARCHAR(100) NOT NULL UNIQUE,
-            title NVARCHAR(150),
-            role NVARCHAR(50) CHECK (role IN ('baron', 'jungle', 'mid', 'dragon', 'support')),
-            image_url NVARCHAR(255),
-            tier NVARCHAR(10) CHECK (tier IN ('S+', 'S', 'A', 'B', 'C', 'D')),
-            patch NVARCHAR(20) NOT NULL,
-            created_at DATETIME DEFAULT GETDATE(),
-            updated_at DATETIME DEFAULT GETDATE()
-        );
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            slug VARCHAR(100) NOT NULL UNIQUE,
+            title VARCHAR(150),
+            role ENUM('baron', 'jungle', 'mid', 'dragon', 'support'),
+            image_url VARCHAR(255),
+            tier ENUM('S+', 'S', 'A', 'B', 'C', 'D'),
+            patch VARCHAR(20) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
         CREATE TABLE statistics (
-            id INT IDENTITY(1,1) PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             champion_id INT NOT NULL,
-            role NVARCHAR(50) NOT NULL CHECK (role IN ('baron', 'jungle', 'mid', 'dragon', 'support')),
+            role ENUM('baron', 'jungle', 'mid', 'dragon', 'support') NOT NULL,
             win_rate DECIMAL(5,2) NOT NULL,
             pick_rate DECIMAL(5,2) NOT NULL,
             ban_rate DECIMAL(5,2) NOT NULL,
-            tier NVARCHAR(10) NOT NULL CHECK (tier IN ('S+', 'S', 'A', 'B', 'C', 'D')),
-            patch NVARCHAR(20) NOT NULL,
-            scraped_at DATETIME DEFAULT GETDATE(),
-            CONSTRAINT fk_stats_champion FOREIGN KEY (champion_id) REFERENCES champions(id) ON DELETE CASCADE
-        );
+            tier ENUM('S+', 'S', 'A', 'B', 'C', 'D') NOT NULL,
+            patch VARCHAR(20) NOT NULL,
+            scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (champion_id) REFERENCES champions(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
         CREATE TABLE counters (
-            id INT IDENTITY(1,1) PRIMARY KEY,
+            id INT AUTO_INCREMENT PRIMARY KEY,
             champion_id INT NOT NULL,
             counter_id INT NOT NULL,
-            matchup_type NVARCHAR(20) NOT NULL CHECK (matchup_type IN ('strong_against', 'weak_against')),
+            matchup_type ENUM('strong_against', 'weak_against') NOT NULL,
             win_rate_diff DECIMAL(5,2) NOT NULL,
-            patch NVARCHAR(20) NOT NULL,
-            created_at DATETIME DEFAULT GETDATE(),
-            CONSTRAINT fk_counter_champ FOREIGN KEY (champion_id) REFERENCES champions(id),
-            CONSTRAINT fk_counter_target FOREIGN KEY (counter_id) REFERENCES champions(id),
-            CONSTRAINT uq_counter_matchup UNIQUE (champion_id, counter_id, matchup_type)
-        );
+            patch VARCHAR(20) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (champion_id) REFERENCES champions(id),
+            FOREIGN KEY (counter_id) REFERENCES champions(id),
+            UNIQUE KEY uq_counter_matchup (champion_id, counter_id, matchup_type)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
         CREATE TABLE scrape_logs (
-            id INT IDENTITY(1,1) PRIMARY KEY,
-            status NVARCHAR(20) NOT NULL CHECK (status IN ('success', 'error', 'running')),
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            status ENUM('success', 'error', 'running') NOT NULL,
             champions_updated INT DEFAULT 0,
-            error_message NVARCHAR(MAX),
-            started_at DATETIME DEFAULT GETDATE(),
+            error_message TEXT,
+            started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             completed_at DATETIME NULL
-        );
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     ";
     $db->exec($createSql);
     echo "[OK] Tables created successfully.\n";
@@ -80,10 +82,12 @@ try {
         $seedSql = file_get_contents($seedFile);
         
         // Split by ';' and execute each statement
-        $statements = explode(';', $seedSql);
+        // Note: For large seed files, multiple queries can be combined or we can just run it as a single block if driver supports it.
+        // PDO default settings usually don't support multi-query via exec well for large dumps, so we split.
+        $statements = array_filter(array_map('trim', explode(';', $seedSql)));
+        
         $count = 0;
         foreach ($statements as $statement) {
-            $statement = trim($statement);
             if (!empty($statement)) {
                 $db->exec($statement);
                 $count++;

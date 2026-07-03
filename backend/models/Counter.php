@@ -20,7 +20,7 @@ class Counter
         $db = Database::getInstance();
 
         // First, resolve the slug to a champion ID
-        $stmt = $db->prepare("SELECT id FROM champions WHERE slug = :slug ORDER BY id ASC OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY");
+        $stmt = $db->prepare("SELECT id FROM champions WHERE slug = :slug LIMIT 1");
         $stmt->execute([':slug' => $slug]);
         $champion = $stmt->fetch();
 

@@ -137,7 +137,7 @@ class Statistic
 
         $sql .= "
                 ORDER BY s2.scraped_at DESC 
-                OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY
+                LIMIT 1
             )
         ";
 
@@ -147,7 +147,7 @@ class Statistic
         }
 
         // Use whitelisted column name directly (safe — validated above)
-        $sql .= " ORDER BY s.{$metric} DESC OFFSET 0 ROWS FETCH NEXT :limit ROWS ONLY";
+        $sql .= " ORDER BY s.{$metric} DESC LIMIT :limit";
         $params[':limit'] = $limit;
 
         $stmt = $db->prepare($sql);

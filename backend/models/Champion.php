@@ -52,7 +52,7 @@ class Champion
 
         $sql .= "
                     ORDER BY s2.scraped_at DESC 
-                    OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY
+                    LIMIT 1
                 )
         ";
 
@@ -116,11 +116,10 @@ class Champion
                     FROM statistics s2 
                     WHERE s2.champion_id = c.id 
                     ORDER BY s2.scraped_at DESC 
-                    OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY
+                    LIMIT 1
                 )
             WHERE c.slug = :slug
-            ORDER BY c.id ASC
-            OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY
+            LIMIT 1
         ";
 
         $stmt = $db->prepare($sql);
